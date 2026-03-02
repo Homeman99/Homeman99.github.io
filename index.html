@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeForge — Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0e14;
+  --surface:#13151f;
+  --surface2:#1a1d2a;
+  --surface3:#20243a;
+  --border:#252840;
+  --accent:#ff6b35;
+  --accent2:#7c5cfc;
+  --green:#2dce89;
+  --red:#f75f6e;
+  --yellow:#ffd060;
+  --text:#e4e6f0;
+  --text-dim:#7a7f9a;
+  --font-mono:'JetBrains Mono',monospace;
+  --font-ui:'Syne',sans-serif;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
+body{display:flex;flex-direction:column;font-family:var(--font-ui)}
+#topbar{
+display:flex;align-items:center;gap:0;
+height:48px;background:var(–surface);
+border-bottom:1px solid var(–border);
+padding:0 12px;gap:8px;
+position:relative;z-index:100;
+}
+#logo{
+font-family:var(–font-ui);font-weight:800;font-size:17px;
+color:var(–accent);letter-spacing:-0.5px;margin-right:12px;
+white-space:nowrap;
+}
+#logo span{color:var(–accent2)}
+
+.tab-bar{display:flex;flex:1;gap:2px;overflow-x:auto;align-items:center}
+.tab-bar::-webkit-scrollbar{height:3px}
+.tab-bar::-webkit-scrollbar-track{background:transparent}
+.tab-bar::-webkit-scrollbar-thumb{background:var(–border)}
+
+.tab{
+display:flex;align-items:center;gap:6px;
+padding:6px 14px;border-radius:6px 6px 0 0;
+font-size:12px;font-family:var(–font-mono);
+cursor:pointer;white-space:nowrap;
+color:var(–text-dim);background:transparent;
+border:1px solid transparent;border-bottom:none;
+transition:all .15s;position:relative;top:1px;
+user-select:none;
+}
+.tab:hover{color:var(–text);background:var(–surface2)}
+.tab.active{
+color:var(–text);background:var(–surface2);
+border-color:var(–border);
+}
+.tab .tab-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tab .tab-dot.html{background:#e44d26}
+.tab .tab-dot.css{background:#264de4}
+.tab .tab-dot.js{background:#f7df1e}
+.tab .tab-close{
+opacity:0;font-size:14px;line-height:1;
+color:var(–text-dim);transition:opacity .15s;
+padding:1px 3px;border-radius:3px;
+}
+.tab:hover .tab-close,.tab.active .tab-close{opacity:1}
+.tab .tab-close:hover{color:var(–red);background:rgba(247,95,110,.15)}
+
+.new-tab-btn{
+padding:4px 10px;border-radius:5px;font-size:18px;
+color:var(–text-dim);cursor:pointer;flex-shrink:0;
+transition:color .15s;
+}
+.new-tab-btn:hover{color:var(–accent)}
+
+topbar-actions{display:flex;gap:6px;margin-left:auto;flex-shrink:0}
+tb-btn{
+display:flex;align-items:center;gap:5px;
+padding:5px 12px;border-radius:6px;font-size:12px;
+font-family:var(–font-ui);font-weight:600;
+cursor:pointer;border:none;transition:all .15s;
+white-space:nowrap;
+}
+tb-btn.primary{background:var(–accent);color:#fff}
+tb-btn.primary:hover{background:#e55a25}
+tb-btn.secondary{background:var(–surface3);color:var(–text);border:1px solid var(–border)}
+tb-btn.secondary:hover{background:var(–border)}
+tb-btn.run{background:var(–green);color:#fff}
+tb-btn.run:hover{background:#25b876}
+main{display:flex;flex:1;overflow:hidden}
+sidbar{
+width:220px;flex-shrink:0;
+background:var(–surface);
+border-right:1px solid var(–border);
+display:flex;flex-direction:column;
+overflow:hidden;
+transition:width .2s;
+}
+sidbar.collapsed{width:0}
+sidebar-section{border-bottom:1px solid var(–border)}
+sidebar-header{
+padding:8px 12px;font-size:11px;font-weight:600;
+color:var(–text-dim);letter-spacing:.8px;text-transform:uppercase;
+display:flex;align-items:center;justify-content:space-between;
+}
+file-tree{padding:4px 0}
+file-item{
+display:flex;align-items:center;gap:7px;
+padding:5px 12px;font-family:var(–font-mono);font-size:12px;
+cursor:pointer;color:var(–text-dim);
+transition:all .12s;
+user-select:none;
+}
+file-item:hover{background:var(–surface2);color:var(–text)}
+file-item.active{background:var(–surface3);color:var(–text);border-left:2px solid var(–accent)}
+file-icon{font-size:13px}
+sidebar-tools{display:flex;flex-direction:column;padding:8px 0}
+side-tool{
+display:flex;align-items:center;gap:8px;
+padding:8px 12px;font-size:12px;
+cursor:pointer;color:var(–text-dim);
+transition:all .12s;
+}
+side-tool:hover{background:var(–surface2);color:var(–text)}
+side-tool .sticon{font-size:15px}
+editor-area{
+flex:1;display:flex;flex-direction:column;overflow:hidden;
+position:relative;
+}
+.editor-wrapper{
+flex:1;display:none;overflow:hidden;position:relative;
+}
+.editor-wrapper.active{display:flex;flex-direction:column}
+.CodeMirror{
+height:100%!important;
+font-family:var(–font-mono)!important;
+font-size:14px!important;
+line-height:1.7!important;
+background:#0d0e14!important;
+}
+.CodeMirror-scroll{padding-bottom:20px}
+.CodeMirror-gutters{background:#11121a!important;border-right:1px solid var(–border)!important}
+.CodeMirror-linenumber{color:#3d4260!important;padding:0 10px!important}
+.CodeMirror-activeline-background{background:rgba(255,255,255,.03)!important}
+.CodeMirror-selected{background:rgba(124,92,252,.3)!important}
+.CodeMirror-cursor{border-left:2px solid var(–accent)!important}
+.CodeMirror-foldgutter-open,.CodeMirror-foldgutter-folded{color:var(–accent2)!important}
+worlpane{display:flex;flex:1;overflow:hidden}
+rectangle{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+interval{
+width:5px;background:var(–border);cursor:col-resize;flex-shrink:0;
+transition:background .15sposition:relative
+}
+interval:hover,interval.dragging{background:var(–accent2)}
+interval{after{
+content:‘⋮’;position:absolute;top:50%;left:50%;
+transform:translate(-50%,-50%);color:var(–text-dim)!important;font-size:14px;
+}
+estuary-functional-designplot-dimension:40%;
+}
